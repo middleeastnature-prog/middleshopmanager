@@ -1,12 +1,937 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>MiddleEastNature Shop Manager</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MiddleEastNature — Shop Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #222;
+      --border: #2e2e2e;
+      --accent: #f5a623;
+      --accent2: #e8f523;
+      --text: #f0f0f0;
+      --muted: #888;
+      --success: #4caf50;
+      --error: #f44336;
+      --radius: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 28px;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+
+    header span {
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* API KEY SECTION */
+    .api-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    .api-section h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .api-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="text"], input[type="password"], textarea, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    .api-row input { flex: 1; }
+
+    button {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    button:hover { opacity: 0.85; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    button.secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    button.danger {
+      background: var(--error);
+      color: #fff;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .status-badge.connected { background: #1a3a1a; color: var(--success); border: 1px solid #2d5a2d; }
+    .status-badge.disconnected { background: #3a1a1a; color: var(--error); border: 1px solid #5a2d2d; }
+    .status-badge.loading { background: #2a2a1a; color: var(--accent); border: 1px solid #4a4a2d; }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* LISTINGS */
+    .listings-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .listing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+
+    .listing-card:hover { border-color: var(--accent); }
+
+    .listing-thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+
+    .listing-info { flex: 1; }
+    .listing-title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+    .listing-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+    .listing-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .listing-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .listing-actions button { padding: 7px 14px; font-size: 13px; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge.active { background: #1a3a1a; color: var(--success); }
+    .badge.inactive { background: #3a1a1a; color: var(--error); }
+    .badge.draft { background: #2a2a1a; color: var(--accent); }
+
+    /* CREATE LISTING */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+    }
+
+    textarea { resize: vertical; min-height: 100px; }
+
+    .char-count { font-size: 11px; color: var(--muted); text-align: right; }
+    .char-count.over { color: var(--error); }
+
+    .tags-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      min-height: 44px;
+      cursor: text;
+    }
+
+    .tag-pill {
+      background: var(--accent);
+      color: #000;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag-pill button {
+      background: none;
+      border: none;
+      color: #000;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .tags-input input {
+      border: none;
+      background: none;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+      flex: 1;
+      min-width: 120px;
+      padding: 2px 4px;
+    }
+
+    /* AI GENERATOR */
+    .ai-section {
+      background: linear-gradient(135deg, #1a1500, #1a1a0a);
+      border: 1px solid #3a3a1a;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .ai-section h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 1px;
+      color: var(--accent2);
+      margin-bottom: 6px;
+    }
+
+    .ai-section p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+    .country-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .country-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 8px;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .country-btn:hover, .country-btn.selected {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .stat-card .label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--accent); letter-spacing: 1px; }
+    .stat-card .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* TOAST */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 14px;
+      animation: slideIn 0.3s ease;
+      max-width: 320px;
+    }
+
+    .toast.success { border-color: var(--success); color: var(--success); }
+    .toast.error { border-color: var(--error); color: var(--error); }
+    .toast.info { border-color: var(--accent); color: var(--accent); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .loader {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #333;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .api-row { flex-direction: column; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <h1>MiddleEastNature Shop Manager</h1>
-  <p>This is a personal tool for managing my own Etsy shop (MiddleEastNature).</p>
-  <p>It uses the Etsy API to read and update my own listings, tags, and descriptions.</p>
-  <p>This tool is for personal use only and is not available to third parties.</p>
+
+<header>
+  <h1>⚽ Shop Manager</h1>
+  <span>MiddleEastNature</span>
+  <div style="margin-left:auto;" id="connectionStatus">
+    <span class="status-badge disconnected">● Not Connected</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- API KEY -->
+  <div class="api-section">
+    <h2>🔑 Etsy API Connection</h2>
+    <div class="api-row">
+      <input type="password" id="apiKey" placeholder="Paste your Etsy API Keystring here (stays in your browser only)" />
+      <input type="text" id="shopId" placeholder="Shop ID (e.g. 12345678)" style="max-width:200px;" />
+      <button onclick="connectAPI()">Connect</button>
+      <button class="secondary" onclick="disconnectAPI()">Disconnect</button>
+    </div>
+    <p style="font-size:12px; color:var(--muted); margin-top:10px;">🔒 Your API key is stored only in your browser's local memory and never sent anywhere except directly to Etsy's API.</p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('listings')">📋 My Listings</button>
+    <button class="tab" onclick="switchTab('create')">➕ Create Listing</button>
+    <button class="tab" onclick="switchTab('ai')">🤖 AI Generator</button>
+    <button class="tab" onclick="switchTab('stats')">📊 Stats</button>
+  </div>
+
+  <!-- LISTINGS TAB -->
+  <div class="tab-content active" id="tab-listings">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 class="section-title">Active Listings</h2>
+      <div style="display:flex; gap:8px;">
+        <button class="secondary" onclick="loadListings()">🔄 Refresh</button>
+      </div>
+    </div>
+    <div class="listings-grid" id="listingsGrid">
+      <div class="empty-state">
+        <div class="icon">🔌</div>
+        <h3>Connect your API key to load listings</h3>
+        <p>Enter your Etsy API key above and click Connect</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATE LISTING TAB -->
+  <div class="tab-content" id="tab-create">
+    <h2 class="section-title">Create New Listing</h2>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Title <span id="titleCount" class="char-count">0/140</span></label>
+        <input type="text" id="newTitle" maxlength="140" placeholder="e.g. USA Soccer Fan T-Shirt, Summer 2026 Football Shirt..." oninput="updateCount('newTitle','titleCount',140)" />
+      </div>
+      <div class="form-group full">
+        <label>Description</label>
+        <textarea id="newDesc" rows="6" placeholder="Describe your product..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Price (USD)</label>
+        <input type="text" id="newPrice" placeholder="29.99" />
+      </div>
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="text" id="newQty" placeholder="999" value="999" />
+      </div>
+      <div class="form-group full">
+        <label>Tags (max 13, each under 20 chars) — press Enter or comma to add</label>
+        <div class="tags-input" id="tagsContainer" onclick="document.getElementById('tagInput').focus()">
+          <input type="text" id="tagInput" placeholder="Type a tag and press Enter..." onkeydown="handleTagInput(event)" />
+        </div>
+        <span style="font-size:11px; color:var(--muted);" id="tagCount">0/13 tags</span>
+      </div>
+      <div class="form-group">
+        <label>Who Made It</label>
+        <select id="whoMade">
+          <option value="i_did">I did</option>
+          <option value="someone_else">Someone else</option>
+          <option value="collective">Collective</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>When Made</label>
+        <select id="whenMade">
+          <option value="made_to_order">Made to order</option>
+          <option value="2020_2024">2020-2024</option>
+          <option value="2010_2019">2010-2019</option>
+        </select>
+      </div>
+      <div class="form-group full" style="margin-top:8px;">
+        <button onclick="createListing()" id="createBtn">🚀 Publish to Etsy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI GENERATOR TAB -->
+  <div class="tab-content" id="tab-ai">
+    <h2 class="section-title">🤖 AI Listing Generator</h2>
+
+    <div class="ai-section">
+      <h3>⚡ World Cup 2026 — Auto Generate</h3>
+      <p>Select a country and I'll generate a complete optimized listing with title, description and tags instantly.</p>
+
+      <div class="country-grid" id="countryGrid">
+        <!-- filled by JS -->
+      </div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button onclick="generateListing()" id="generateBtn">⚡ Generate Listing</button>
+        <button class="secondary" onclick="copyToCreate()">📋 Copy to Create Tab</button>
+      </div>
+    </div>
+
+    <div id="generatedOutput" style="display:none;">
+      <hr class="divider"/>
+      <h3 class="section-title">Generated Content</h3>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Title</label>
+          <input type="text" id="genTitle" readonly />
+        </div>
+        <div class="form-group full">
+          <label>Description</label>
+          <textarea id="genDesc" rows="8" readonly></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Tags</label>
+          <input type="text" id="genTags" readonly />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS TAB -->
+  <div class="tab-content" id="tab-stats">
+    <h2 class="section-title">📊 Shop Statistics</h2>
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="label">Total Listings</div>
+        <div class="value" id="statListings">—</div>
+        <div class="sub">active in store</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Views</div>
+        <div class="value" id="statViews">—</div>
+        <div class="sub">all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Sales</div>
+        <div class="value" id="statSales">—</div>
+        <div class="sub">all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Shop Age</div>
+        <div class="value" id="statAge">—</div>
+        <div class="sub">years on Etsy</div>
+      </div>
+    </div>
+    <button onclick="loadStats()">🔄 Load Stats</button>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // ── STATE ──
+  let apiKey = '';
+  let shopId = '';
+  let tags = [];
+  let selectedCountry = null;
+  let listings = [];
+
+  const COUNTRIES = [
+    { name: '🇺🇸 USA', key: 'usa', color: 'red, white and blue', nickname: 'the Stars and Stripes', vamos: 'Go USA!' },
+    { name: '🇲🇽 Mexico', key: 'mexico', color: 'green, white and red', nickname: 'El Tri', vamos: '¡Vamos México!' },
+    { name: '🇧🇷 Brazil', key: 'brazil', color: 'green, yellow and blue', nickname: 'A Seleção', vamos: 'Vai Brasil!' },
+    { name: '🇦🇷 Argentina', key: 'argentina', color: 'light blue and white', nickname: 'La Albiceleste', vamos: '¡Vamos Argentina!' },
+    { name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England', key: 'england', color: 'red and white', nickname: 'The Three Lions', vamos: 'Come on England!' },
+    { name: '🇩🇪 Germany', key: 'germany', color: 'black, red and gold', nickname: 'Die Mannschaft', vamos: 'Los Germany!' },
+    { name: '🇫🇷 France', key: 'france', color: 'blue, white and red', nickname: 'Les Bleus', vamos: 'Allez les Bleus!' },
+    { name: '🇵🇹 Portugal', key: 'portugal', color: 'green and red', nickname: 'A Seleção das Quinas', vamos: 'Força Portugal!' },
+    { name: '🇨🇦 Canada', key: 'canada', color: 'red and white', nickname: 'Les Rouges', vamos: 'Go Canada!' },
+    { name: '🇯🇵 Japan', key: 'japan', color: 'blue and white', nickname: 'Samurai Blue', vamos: 'Ganbare Nippon!' },
+    { name: '🇳🇱 Netherlands', key: 'netherlands', color: 'orange and black', nickname: 'Oranje', vamos: 'Hup Holland Hup!' },
+    { name: '🇪🇸 Spain', key: 'spain', color: 'red and yellow', nickname: 'La Roja', vamos: '¡Vamos España!' },
+  ];
+
+  // ── INIT ──
+  window.onload = () => {
+    // Load saved credentials
+    const saved = localStorage.getItem('etsyApiKey');
+    const savedShop = localStorage.getItem('etsyShopId');
+    if (saved) { document.getElementById('apiKey').value = saved; apiKey = saved; }
+    if (savedShop) { document.getElementById('shopId').value = savedShop; shopId = savedShop; }
+    if (apiKey && shopId) updateConnectionStatus(true);
+
+    // Build country grid
+    const grid = document.getElementById('countryGrid');
+    COUNTRIES.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'country-btn';
+      btn.textContent = c.name;
+      btn.onclick = () => selectCountry(c, btn);
+      grid.appendChild(btn);
+    });
+  };
+
+  // ── API CONNECTION ──
+  function connectAPI() {
+    apiKey = document.getElementById('apiKey').value.trim();
+    shopId = document.getElementById('shopId').value.trim();
+    if (!apiKey || !shopId) { showToast('Please enter both API key and Shop ID', 'error'); return; }
+    localStorage.setItem('etsyApiKey', apiKey);
+    localStorage.setItem('etsyShopId', shopId);
+    updateConnectionStatus(true);
+    showToast('Connected! Loading listings...', 'success');
+    loadListings();
+  }
+
+  function disconnectAPI() {
+    apiKey = ''; shopId = '';
+    localStorage.removeItem('etsyApiKey');
+    localStorage.removeItem('etsyShopId');
+    document.getElementById('apiKey').value = '';
+    document.getElementById('shopId').value = '';
+    updateConnectionStatus(false);
+    document.getElementById('listingsGrid').innerHTML = `<div class="empty-state"><div class="icon">🔌</div><h3>Disconnected</h3></div>`;
+    showToast('Disconnected', 'info');
+  }
+
+  function updateConnectionStatus(connected) {
+    const el = document.getElementById('connectionStatus');
+    el.innerHTML = connected
+      ? `<span class="status-badge connected">● Connected</span>`
+      : `<span class="status-badge disconnected">● Not Connected</span>`;
+  }
+
+  // ── ETSY API CALLS ──
+  async function etsyFetch(path, options = {}) {
+    const url = `https://openapi.etsy.com/v3${path}`;
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        'x-api-key': apiKey,
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      }
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Etsy API error ${res.status}: ${err}`);
+    }
+    return res.json();
+  }
+
+  async function loadListings() {
+    if (!apiKey || !shopId) { showToast('Please connect your API first', 'error'); return; }
+    const grid = document.getElementById('listingsGrid');
+    grid.innerHTML = `<div class="empty-state"><span class="loader"></span> Loading listings...</div>`;
+    try {
+      const data = await etsyFetch(`/application/shops/${shopId}/listings?state=active&limit=25`);
+      listings = data.results || [];
+      renderListings(listings);
+      showToast(`Loaded ${listings.length} listings`, 'success');
+    } catch (e) {
+      grid.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Error loading listings</h3><p style="color:var(--error)">${e.message}</p></div>`;
+      showToast('Failed to load listings', 'error');
+    }
+  }
+
+  function renderListings(items) {
+    const grid = document.getElementById('listingsGrid');
+    if (!items.length) {
+      grid.innerHTML = `<div class="empty-state"><div class="icon">📭</div><h3>No active listings found</h3></div>`;
+      return;
+    }
+    grid.innerHTML = items.map(l => `
+      <div class="listing-card">
+        <img class="listing-thumb" src="${l.images?.[0]?.url_170x135 || ''}" onerror="this.style.background='#333'" alt="" />
+        <div class="listing-info">
+          <div class="listing-title">${l.title}</div>
+          <div class="listing-meta">
+            <span>💰 $${(l.price.amount / l.price.divisor).toFixed(2)}</span>
+            <span>👁 ${l.views || 0} views</span>
+            <span>❤️ ${l.num_favorers || 0} favorites</span>
+            <span class="badge ${l.state === 'active' ? 'active' : 'inactive'}">${l.state}</span>
+          </div>
+          <div class="listing-actions">
+            <button class="secondary" onclick="window.open('${l.url}','_blank')">🔗 View on Etsy</button>
+            <button class="secondary" onclick="deactivateListing(${l.listing_id})">⏸ Deactivate</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function deactivateListing(id) {
+    if (!confirm('Deactivate this listing?')) return;
+    try {
+      await etsyFetch(`/application/shops/${shopId}/listings/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ state: 'inactive' })
+      });
+      showToast('Listing deactivated', 'success');
+      loadListings();
+    } catch (e) {
+      showToast('Error: ' + e.message, 'error');
+    }
+  }
+
+  async function createListing() {
+    if (!apiKey || !shopId) { showToast('Connect API first', 'error'); return; }
+    const title = document.getElementById('newTitle').value.trim();
+    const desc = document.getElementById('newDesc').value.trim();
+    const price = parseFloat(document.getElementById('newPrice').value);
+    const qty = parseInt(document.getElementById('newQty').value);
+    if (!title || !desc || !price) { showToast('Please fill in all required fields', 'error'); return; }
+    const btn = document.getElementById('createBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> Publishing...';
+    try {
+      await etsyFetch(`/application/shops/${shopId}/listings`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title, description: desc,
+          price: { amount: Math.round(price * 100), divisor: 100, currency_code: 'USD' },
+          quantity: qty,
+          tags: tags.slice(0, 13),
+          who_made: document.getElementById('whoMade').value,
+          when_made: document.getElementById('whenMade').value,
+          taxonomy_id: 1063,
+          shipping_profile_id: null,
+          state: 'active'
+        })
+      });
+      showToast('Listing published to Etsy! ✅', 'success');
+      loadListings();
+      switchTab('listings');
+    } catch (e) {
+      showToast('Error: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🚀 Publish to Etsy';
+    }
+  }
+
+  // ── AI GENERATOR ──
+  function selectCountry(country, btn) {
+    document.querySelectorAll('.country-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCountry = country;
+  }
+
+  async function generateListing() {
+    if (!selectedCountry) { showToast('Please select a country first', 'error'); return; }
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> Generating...';
+
+    const c = selectedCountry;
+    const prompt = `Generate an optimized Etsy listing for a ${c.name.replace(/[^\w\s]/g, '').trim()} soccer fan t-shirt for the Summer 2026 World Cup. The design uses ${c.color} colors and represents ${c.nickname}.
+
+Return ONLY a JSON object with these exact keys:
+{
+  "title": "SEO optimized title under 140 chars",
+  "description": "Engaging product description with emojis, bullet points about the shirt quality, who it's for, and shipping info. End with '${c.vamos}'",
+  "tags": ["array", "of", "13", "tags", "each", "under", "20", "chars"]
+}
+
+Make the title keyword-rich for Etsy search. Tags should be specific to ${c.name.replace(/[^\w\s]/g, '').trim()} soccer fans. Return only valid JSON, no markdown.`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content[0].text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(text);
+
+      document.getElementById('genTitle').value = parsed.title || '';
+      document.getElementById('genDesc').value = parsed.description || '';
+      document.getElementById('genTags').value = (parsed.tags || []).join(', ');
+      document.getElementById('generatedOutput').style.display = 'block';
+      showToast('Listing generated! ✅', 'success');
+    } catch (e) {
+      showToast('Generation failed: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '⚡ Generate Listing';
+    }
+  }
+
+  function copyToCreate() {
+    const title = document.getElementById('genTitle').value;
+    const desc = document.getElementById('genDesc').value;
+    const tagsStr = document.getElementById('genTags').value;
+    if (!title) { showToast('Generate a listing first', 'error'); return; }
+    document.getElementById('newTitle').value = title;
+    document.getElementById('newDesc').value = desc;
+    updateCount('newTitle', 'titleCount', 140);
+    tags = tagsStr.split(',').map(t => t.trim()).filter(Boolean).slice(0, 13);
+    renderTags();
+    switchTab('create');
+    showToast('Copied to Create tab!', 'success');
+  }
+
+  // ── STATS ──
+  async function loadStats() {
+    if (!apiKey || !shopId) { showToast('Connect API first', 'error'); return; }
+    try {
+      const shop = await etsyFetch(`/application/shops/${shopId}`);
+      document.getElementById('statListings').textContent = shop.listing_active_count || 0;
+      document.getElementById('statSales').textContent = shop.transaction_sold_count || 0;
+      document.getElementById('statViews').textContent = '—';
+      const since = new Date(shop.create_date * 1000);
+      const years = ((Date.now() - since) / (1000 * 60 * 60 * 24 * 365)).toFixed(1);
+      document.getElementById('statAge').textContent = years;
+      showToast('Stats loaded!', 'success');
+    } catch (e) {
+      showToast('Error: ' + e.message, 'error');
+    }
+  }
+
+  // ── TAGS ──
+  function handleTagInput(e) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const val = e.target.value.trim().replace(',', '');
+      if (!val) return;
+      if (val.length > 20) { showToast('Tag must be under 20 characters', 'error'); return; }
+      if (tags.length >= 13) { showToast('Maximum 13 tags allowed', 'error'); return; }
+      if (!tags.includes(val)) { tags.push(val); renderTags(); }
+      e.target.value = '';
+    }
+  }
+
+  function renderTags() {
+    const container = document.getElementById('tagsContainer');
+    const input = document.getElementById('tagInput');
+    container.innerHTML = '';
+    tags.forEach((t, i) => {
+      const pill = document.createElement('span');
+      pill.className = 'tag-pill';
+      pill.innerHTML = `${t} <button onclick="removeTag(${i})">×</button>`;
+      container.appendChild(pill);
+    });
+    container.appendChild(input);
+    document.getElementById('tagCount').textContent = `${tags.length}/13 tags`;
+  }
+
+  function removeTag(i) { tags.splice(i, 1); renderTags(); }
+
+  // ── UTILS ──
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      const names = ['listings', 'create', 'ai', 'stats'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.add('active');
+  }
+
+  function updateCount(inputId, countId, max) {
+    const len = document.getElementById(inputId).value.length;
+    const el = document.getElementById(countId);
+    el.textContent = `${len}/${max}`;
+    el.classList.toggle('over', len > max);
+  }
+
+  function showToast(msg, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
+</script>
 </body>
 </html>
